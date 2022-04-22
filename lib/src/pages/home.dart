@@ -16,7 +16,7 @@ class Home extends StatelessWidget {
                 TextButton(
                   style: TextButton.styleFrom(
                       fixedSize: const Size(150, 50),
-                      backgroundColor: const Color.fromARGB(1, 110, 161, 50)),
+                      backgroundColor: const Color.fromRGBO(110, 161, 50, 1)),
                   onPressed: () {
                     Navigator.pushNamed(context, 'start');
                   },
