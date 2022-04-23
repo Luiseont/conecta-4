@@ -20,20 +20,24 @@ class _GameOn extends State<GameOn> {
   //Controla el jugador tiene el turno actual.
   int currentTurn = 1;
 
-  List<List> tab = [
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-    [],
-  ];
+  //tablero de juego.
+  Map<int, Map<int, int>> tab = {
+    0: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+    1: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+    2: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+    3: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+    4: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+    5: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+    6: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0}
+  };
 
   void onTap(x, y) => setState(() {
-        tab[x].add(currentTurn);
+        var index = tab[x]
+            ?.entries
+            .firstWhere((element) => (element.value == 0) ? true : false);
+
+        tab[x]?[index!.key] = currentTurn;
         currentTurn = (currentTurn == 1) ? 2 : 1;
-        print(tab);
       });
 
   Widget renderTablero() {
@@ -57,7 +61,7 @@ class _GameOn extends State<GameOn> {
   Widget points(x, y) {
     return GestureDetector(
         onTap: () {
-          if (tab[x].length <= 5) {
+          if (tab[x]?[y] == 0) {
             onTap(x, y);
           }
         },
@@ -71,9 +75,9 @@ class _GameOn extends State<GameOn> {
   }
 
   Color getColor(x, y) {
-    return ((tab[x].isEmpty))
+    return (tab[x]?[y] == 0)
         ? Colors.grey
-        : (tab[x][y] == 1)
+        : (tab[x]?[y] == 1)
             ? player1
             : player2;
   }
@@ -89,15 +93,15 @@ class _GameOn extends State<GameOn> {
                   fixedSize: const Size(150, 50),
                   backgroundColor: const Color.fromRGBO(0, 200, 242, 0.80)),
               onPressed: () => setState(() {
-                    tab = [
-                      [],
-                      [],
-                      [],
-                      [],
-                      [],
-                      [],
-                      [],
-                    ];
+                    tab = {
+                      0: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+                      1: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+                      2: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+                      3: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+                      4: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+                      5: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+                      6: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0}
+                    };
                   }),
               child: const Text("Reiniciar partida",
                   style: TextStyle(color: Color.fromRGBO(255, 255, 255, 1)))),
