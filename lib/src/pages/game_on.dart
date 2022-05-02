@@ -1,7 +1,10 @@
-import 'package:conecta/src/pages/partials/point_widget.dart';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 class GameOn extends StatefulWidget {
+  const GameOn({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return _GameOn();
@@ -10,7 +13,6 @@ class GameOn extends StatefulWidget {
 
 class _GameOn extends State<GameOn> {
   //Contadores para el puntaje
-
   Map scores = {'Player1': 0, 'Player2': 0};
 
   //colores de los jugadores.
@@ -20,37 +22,131 @@ class _GameOn extends State<GameOn> {
   //Controla el jugador tiene el turno actual.
   int currentTurn = 1;
 
-  //tablero de juego.
-  Map<int, Map<int, int>> tab = {
-    0: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
-    1: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
-    2: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
-    3: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
-    4: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
-    5: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
-    6: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0}
-  };
+  //Variables para determinar tamanio del tablero
+  final int ejeX = 6;
+  final int ejeY = 7;
 
+  //tablero de juego.
+  Map<int, Map<int, int>> tab = {};
+
+  // funciones core;
   void onTap(x, y) => setState(() {
         var index = tab[x]
             ?.entries
             .firstWhere((element) => (element.value == 0) ? true : false);
-
         tab[x]?[index!.key] = currentTurn;
-        currentTurn = (currentTurn == 1) ? 2 : 1;
+        checkWinner();
       });
 
+  void reiniciaTablero() => setState(() {
+        tab = {
+          0: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+          1: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+          2: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+          3: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+          4: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+          5: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+          6: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
+        };
+        currentTurn = 1;
+      });
+
+  void reiniciaMarcador() => setState(() {
+        scores['Player1'] = 0;
+        scores['Player2'] = 0;
+      });
+
+  void checkWinner() {
+    if (checkY() || checkX()) {
+      String winner = (currentTurn == 1) ? 'Player1' : 'Player2';
+      scores[winner]++;
+      reiniciaTablero();
+    } else if (checkTie()) {
+      reiniciaTablero();
+    } else {
+      currentTurn = (currentTurn == 1) ? 2 : 1;
+    }
+  }
+
+  //fin funciones core
+
+  //funciones aux
+
+  Color getColor(x, y) {
+    return (tab[x]?[y] == 0)
+        ? Colors.grey
+        : (tab[x]?[y] == 1)
+            ? player1
+            : player2;
+  }
+
+  bool checkTie() {
+    return false;
+  }
+
+  bool checkY() {
+    bool win = false;
+    for (int y = 0; y < ejeY; y++) {
+      var result = tab[y]
+          ?.entries
+          .toList()
+          .where((element) => (element.value == currentTurn) ? true : false);
+
+      //print("resultado de la line $y = $result");
+      if (result?.length == 4) {
+        win = validaContinuidad(result);
+        break;
+      }
+    }
+
+    return win;
+  }
+
+  bool checkX() {
+    bool win = false;
+
+    for (int x = ejeX - 1; x > 0; x--) {
+      Map<int, int> currnet = {};
+      for (int y = 0; y < ejeY; y++) {
+        if (tab[y]?[x] == currentTurn) {
+          currnet.addEntries({y: x}.entries);
+        }
+        //print("coordenada $y - $x valor: ${tab[y]?[x]}");
+      }
+      if (currnet.length == 4) {
+        win = validaContinuidad(currnet.entries);
+        break;
+      }
+    }
+
+    return win;
+  }
+
+  bool validaContinuidad(Iterable<MapEntry<int, int>>? toValidate) {
+    int count = 0;
+
+    toValidate?.forEach((element) {
+      int prev = element.key - 1;
+      if (prev - element.key == 1 || prev - element.key == -1) {
+        count++;
+      }
+    });
+
+    return (count == 4) ? true : false;
+  }
+
+  // funiones render
   Widget renderTablero() {
     return SizedBox(
       height: 400,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          for (var rows = 0; rows < 7; rows++)
+          for (var rows = 0; rows < ejeY; rows++)
             Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                for (var cols = 0; cols < 6; cols++) points(rows, cols)
+                for (var cols = 0; cols < ejeX; cols++) points(rows, cols)
               ],
             )
         ],
@@ -74,45 +170,24 @@ class _GameOn extends State<GameOn> {
             )));
   }
 
-  Color getColor(x, y) {
-    return (tab[x]?[y] == 0)
-        ? Colors.grey
-        : (tab[x]?[y] == 1)
-            ? player1
-            : player2;
-  }
-
   Widget botones() {
     return Padding(
-      padding: const EdgeInsets.only(top: 25),
+      padding: const EdgeInsets.only(top: 55),
       child: ButtonBar(
         alignment: MainAxisAlignment.center,
         children: [
           TextButton(
               style: TextButton.styleFrom(
-                  fixedSize: const Size(150, 50),
+                  fixedSize: Size(MediaQuery.of(context).size.width * 0.45, 40),
                   backgroundColor: const Color.fromRGBO(0, 200, 242, 0.80)),
-              onPressed: () => setState(() {
-                    tab = {
-                      0: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
-                      1: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
-                      2: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
-                      3: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
-                      4: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
-                      5: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0},
-                      6: {5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0}
-                    };
-                  }),
+              onPressed: () => reiniciaTablero(),
               child: const Text("Reiniciar partida",
                   style: TextStyle(color: Color.fromRGBO(255, 255, 255, 1)))),
           TextButton(
               style: TextButton.styleFrom(
-                  fixedSize: const Size(150, 50),
+                  fixedSize: Size(MediaQuery.of(context).size.width * 0.45, 40),
                   backgroundColor: const Color.fromRGBO(68, 128, 138, 1)),
-              onPressed: () => setState(() {
-                    scores['Player1'] = 0;
-                    scores['Player2'] = 0;
-                  }),
+              onPressed: () => reiniciaMarcador(),
               child: const Text("Reinicia contador",
                   style: TextStyle(color: Color.fromRGBO(255, 255, 255, 1)))),
         ],
@@ -131,7 +206,7 @@ class _GameOn extends State<GameOn> {
                   : const Color.fromARGB(255, 115, 32, 26),
               borderRadius:
                   const BorderRadius.horizontal(left: Radius.circular(20))),
-          width: 150,
+          width: 200,
           height: 60,
           child: Center(
             child: Text(
@@ -147,7 +222,7 @@ class _GameOn extends State<GameOn> {
                     : const Color.fromARGB(255, 134, 124, 28),
                 borderRadius:
                     const BorderRadius.horizontal(right: Radius.circular(20))),
-            width: 150,
+            width: 200,
             height: 60,
             child: Center(
               child: Text(
@@ -157,6 +232,12 @@ class _GameOn extends State<GameOn> {
             ))
       ],
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    reiniciaTablero();
   }
 
   @override
